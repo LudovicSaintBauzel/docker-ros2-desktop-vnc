@@ -28,7 +28,7 @@ ARG TARGETARCH
 # This environment variable is only declared at build time.
 ARG QEMU_CPU
 
-LABEL maintainer="Tiryoh<tiryoh@gmail.com>"
+LABEL maintainer="Ludosb<ludovic.saintbauzel@gmail.com>"
 
 SHELL ["/bin/bash", "-c"]
 
@@ -48,13 +48,15 @@ RUN apt-get update -q && \
     rm -rf /var/lib/apt/lists/*
 
 # Add Package
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN apt-get update -q
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         tigervnc-standalone-server tigervnc-common \
         supervisor wget curl gosu git sudo python3-full python3-pip tini \
         build-essential vim sudo lsb-release locales \
-        bash-completion tzdata terminator && \
-    apt-get autoclean && \
+        bash-completion tzdata terminator 
+
+        RUN    apt-get autoclean && \ 
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
 
@@ -112,7 +114,6 @@ RUN apt-get update -q && \
     rosdep init && \
     rm -rf /var/lib/apt/lists/*
 
-RUN rosdep update
 
 # Install simulation packages are
 # not ready for amd64/arm64 for now (May 27th, 2024)
@@ -124,6 +125,20 @@ RUN rosdep update
 #     ros-${ROS_DISTRO}-ros-gz && \
 #     rm -rf /var/lib/apt/lists/*; \
 #     fi
+
+# Install ros2_control_demos
+RUN mkdir -p /home/ubuntu/rosws/src \
+    && git clone https://github.com/ros-controls/ros2_control_demos.git /home/ubuntu/rosws/src/ros2_control_demos && \
+    rosdep fix-permissions && \
+    rosdep update --rosdistro=$ROS_DISTRO && \
+    apt-get update && \
+    echo "rosdep install" && \
+    cd /home/ubuntu/rosws/ && \
+    rosdep install --from-paths ./ -i -y --rosdistro ${ROS_DISTRO} && \
+    echo "rosdep installed" && \
+    apt-get autoclean && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
 
 # Enable apt-get completion after running `apt-get update` in the container
 RUN rm /etc/apt/apt.conf.d/docker-clean
