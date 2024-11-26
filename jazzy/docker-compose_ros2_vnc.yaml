@@ -1,0 +1,24 @@
+services:
+  ros-desktop-vnc:
+    image: ludosb/ros2-jazzy-vnc:arm64
+    # Utilisation du mode réseau host
+    network_mode: host
+    # Partage de l'espace IPC avec l'hôte
+    ipc: host
+    # Options de sécurité pour désactiver le profil seccomp par défaut
+    security_opt:
+      - seccomp:unconfined
+    # Taille de la mémoire partagée
+    shm_size: '512m'
+    # Redémarrage automatique du conteneur en cas de plantage
+    restart: unless-stopped
+    # Nom du conteneur (optionnel)
+    container_name: ros2_vnc
+    # Hostname du conteneur (optionnel)
+    hostname: remotepc
+    # Mappage des ports (optionnel si network_mode: host est utilisé)
+    # Si vous souhaitez utiliser le mappage de ports au lieu du mode host, commentez ou supprimez network_mode et ipc, puis décommentez les lignes ports.
+    ports:
+      - "6080:6080"
+    volumes:
+      - /Users/ludo/docker/src:/home/ubuntu/rosws/src
