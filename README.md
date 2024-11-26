@@ -30,7 +30,7 @@ Change the `shm-size` value depending on the situation.
 __NOTE__: `--security-opt seccomp=unconfined` flag is required to launch humble image. See https://github.com/Tiryoh/docker-ros2-desktop-vnc/pull/56.
 
 ```
-docker run -p 6080:80 --security-opt seccomp=unconfined --shm-size=512m tiryoh/ros2-desktop-vnc:humble
+docker run --ipc host --net host -p 6080:6080 --security-opt seccomp=unconfined --shm-size=512m ludosb/ros2-jazzy-vnc
 ```
 
 Browse http://127.0.0.1:6080/.
