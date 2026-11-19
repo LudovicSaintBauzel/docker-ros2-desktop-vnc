@@ -1,4 +1,5 @@
-# docker-ros2-desktop-vnc
+# docker-ros2-desktop-vnc-ros2-control
+
 
 Dockerfiles to provide HTML5 VNC interface to access Ubuntu Desktop + ROS2, based on [AtsushiSaito/docker-ubuntu-sweb](https://github.com/AtsushiSaito/docker-ubuntu-sweb)
 
@@ -31,8 +32,10 @@ https://memoteki.net/archives/2955
 Run the docker container and access with port `6080`.  
 Change the `shm-size` value depending on the situation.
 
+__NOTE__: `--security-opt seccomp=unconfined` flag is required to launch humble image. See https://github.com/Tiryoh/docker-ros2-desktop-vnc/pull/56.
+
 ```
-docker run -p 6080:80 --shm-size=512m ghcr.io/tiryoh/ros2-desktop-vnc:lyrical
+docker run --ipc host --net host -p 6080:6080 --security-opt seccomp=unconfined --shm-size=512m ludosb/ros2-jazzy-vnc
 ```
 
 Browse http://127.0.0.1:6080/.
@@ -61,21 +64,21 @@ To build Docker image from this Dockerfile, run the following command.
 * humble
 ```sh
 # using "docker build"
-cd humble && docker build -t tiryoh/ros2-desktop-vnc:humble .
+cd humble && docker build -t ludosb/ros2-desktop-vnc:humble .
 # using "docker buildx" (amd64)
-cd humble && docker buildx build --platform=linux/amd64 --progress=plain -t tiryoh/ros2-desktop-vnc:humble-amd64 .
+cd humble && docker buildx build --platform=linux/amd64 --progress=plain -t ludosb/ros2-desktop-vnc:humble-amd64 .
 # using "docker buildx" (arm64)
-cd humble && docker buildx build --platform=linux/arm64 --progress=plain -t tiryoh/ros2-desktop-vnc:humble-arm64 .
+cd humble && docker buildx build --platform=linux/arm64 --progress=plain -t ludosb/ros2-desktop-vnc:humble-arm64 .
 ```
 
 * iron
 ```sh
 # using "docker build"
-cd iron && docker build -t tiryoh/ros2-desktop-vnc:iron .
+cd iron && docker build -t ludosb/ros2-desktop-vnc:iron .
 # using "docker buildx" (amd64)
-cd iron && docker buildx build --platform=linux/amd64 --progress=plain -t tiryoh/ros2-desktop-vnc:iron-amd64 .
+cd iron && docker buildx build --platform=linux/amd64 --progress=plain -t ludosb/ros2-desktop-vnc:iron-amd64 .
 # using "docker buildx" (arm64)
-cd iron && docker buildx build --platform=linux/arm64 --progress=plain -t tiryoh/ros2-desktop-vnc:iron-arm64 .
+cd iron && docker buildx build --platform=linux/arm64 --progress=plain -t ludosb/ros2-desktop-vnc:iron-arm64 .
 ```
 
 * jazzy
@@ -83,19 +86,9 @@ cd iron && docker buildx build --platform=linux/arm64 --progress=plain -t tiryoh
 # using "docker build"
 cd jazzy && docker build -t tiryoh/ros2-desktop-vnc:jazzy .
 # using "docker buildx" (amd64)
-cd jazzy && docker buildx build --platform=linux/amd64 --progress=plain -t tiryoh/ros2-desktop-vnc:jazzy-amd64 .
+cd jazzy && docker buildx build --platform=linux/amd64 --progress=plain -t ludosb/ros2-desktop-vnc:jazzy-amd64 .
 # using "docker buildx" (arm64)
-cd jazzy && docker buildx build --platform=linux/arm64 --progress=plain -t tiryoh/ros2-desktop-vnc:jazzy-arm64 .
-```
-
-* lyrical
-```sh
-# using "docker build"
-cd lyrical && docker build -t tiryoh/ros2-desktop-vnc:lyrical .
-# using "docker buildx" (amd64)
-cd lyrical && docker buildx build --platform=linux/amd64 --progress=plain -t tiryoh/ros2-desktop-vnc:lyrical-amd64 .
-# using "docker buildx" (arm64)
-cd lyrical && docker buildx build --platform=linux/arm64 --progress=plain -t tiryoh/ros2-desktop-vnc:lyrical-arm64 .
+cd jazzy && docker buildx build --platform=linux/arm64 --progress=plain -t ludosb/ros2-desktop-vnc:jazzy-arm64 .
 ```
 
 * rolling
@@ -107,31 +100,6 @@ cd rolling && docker buildx build --platform=linux/amd64 --progress=plain -t tir
 # using "docker buildx" (arm64)
 cd rolling && docker buildx build --platform=linux/arm64 --progress=plain -t tiryoh/ros2-desktop-vnc:rolling-arm64 .
 ```
-
-<details>
-<summary>Deprecated distros (dashing, eloquent, foxy, galactic)</summary>
-
-* dashing (deprecated)
-```sh
-cd dashing && docker build -t tiryoh/ros2-desktop-vnc:dashing .
-```
-
-* eloquent (deprecated)
-```sh
-cd eloquent && docker build -t tiryoh/ros2-desktop-vnc:eloquent .
-```
-
-* foxy (deprecated)
-```sh
-cd foxy && docker build -t tiryoh/ros2-desktop-vnc:foxy .
-```
-
-* galactic (deprecated)
-```sh
-cd galactic && docker build -t tiryoh/ros2-desktop-vnc:galactic .
-```
-
-</details>
 
 ## Docker tags on hub.docker.com
 

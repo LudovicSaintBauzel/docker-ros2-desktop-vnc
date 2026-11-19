@@ -54,9 +54,9 @@ if [ -e /tmp/.X11-unix/X1 ]; then
 fi
 
 if [ $(uname -m) = "aarch64" ]; then
-    LD_PRELOAD=/lib/aarch64-linux-gnu/libgcc_s.so.1 vncserver :1 -fg -geometry 1920x1080 -depth 24
+    LD_PRELOAD=/lib/aarch64-linux-gnu/libgcc_s.so.1 vncserver :5 -fg -geometry 1920x1080 -depth 24 
 else
-    vncserver :1 -fg -geometry 1920x1080 -depth 24
+    vncserver :5 -fg -geometry 1920x1080 -depth 24
 fi
 EOF
 
@@ -69,13 +69,15 @@ user=root
 [program:vnc]
 command=gosu '$USER' bash '$VNCRUN_PATH'
 [program:novnc]
-command=gosu '$USER' bash -c "websockify --web=/usr/lib/novnc 80 localhost:5901"
+command=gosu '$USER' bash -c "websockify --web=/usr/lib/novnc 6080 localhost:5905"
 EOF
 
 # colcon
 BASHRC_PATH="$HOME/.bashrc"
 grep -F "source /opt/ros/$ROS_DISTRO/setup.bash" "$BASHRC_PATH" || echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> "$BASHRC_PATH"
+grep -F "source /home/ubuntu/rosws/install/local_setup.bash" "$BASHRC_PATH" || echo "#source /home/ubuntu/rosws/install/local_setup.bash" >> "$BASHRC_PATH" 
 grep -F "export ROS_AUTOMATIC_DISCOVERY_RANGE=" "$BASHRC_PATH" || echo "# export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST" >> "$BASHRC_PATH"
+echo "export PS1='🐳 🐢  \[\033[1;36m\][\u@ros_$ROS_DISTRO] \[\033[1;34m\]\W\[\033[0;35m\] \[\033[1;36m\]# \[\033[0m\]'" >> "$BASHRC_PATH"
 chown "$USER:$USER" "$BASHRC_PATH"
 
 # Fix rosdep permission
@@ -354,7 +356,7 @@ echo "Launched docker container."
 echo -e 'Open \e]8;;http://127.0.0.1:6080\e\\http://127.0.0.1:6080\e]8;;\e\\ via web browser.'
 echo ""
 echo "NOTE 1: Default user is \"$USER\", password is \"$PASSWORD\"."
-echo "NOTE 2: --security-opt seccomp=unconfined flag is required to launch Ubuntu Jammy/Noble based image on some environment."
+echo "NOTE 2: --security-opt seccomp=unconfined flag is required to launch Ubuntu Jammy based image."
 echo -e 'See \e]8;;https://github.com/Tiryoh/docker-ros2-desktop-vnc/pull/56\e\\https://github.com/Tiryoh/docker-ros2-desktop-vnc/pull/56\e]8;;\e\\'
 echo "============================================================================================"
 

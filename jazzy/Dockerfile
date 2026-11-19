@@ -16,7 +16,7 @@
 # This Dockerfile is based on https://github.com/AtsushiSaito/docker-ubuntu-sweb
 # which is released under the Apache-2.0 license.
 
-FROM ubuntu:noble-20260410
+FROM ubuntu:noble-20241011
 
 # Automatic platform ARGs in the global scope
 # https://docs.docker.com/reference/dockerfile/#automatic-platform-args-in-the-global-scope
@@ -28,7 +28,7 @@ ARG TARGETARCH
 # This environment variable is only declared at build time.
 ARG QEMU_CPU
 
-LABEL maintainer="Tiryoh<tiryoh@gmail.com>"
+LABEL maintainer="Ludosb<ludovic.saintbauzel@gmail.com>"
 
 SHELL ["/bin/bash", "-c"]
 
@@ -42,19 +42,21 @@ RUN apt-get update -q && \
 # Install Ubuntu Mate desktop
 RUN apt-get update -q && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        ubuntu-mate-desktop && \
+    ubuntu-mate-desktop && \
     apt-get autoclean && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
 
 # Add Package
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        tigervnc-standalone-server tigervnc-common \
-        supervisor wget curl gosu git sudo python3-full python3-pip tini \
-        build-essential vim sudo lsb-release locales \
-        bash-completion tzdata terminator && \
-    apt-get autoclean && \
+RUN apt-get update -q
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    tigervnc-standalone-server tigervnc-common \
+    supervisor wget curl gosu git sudo python3-full python3-pip tini \
+    build-essential vim sudo lsb-release locales \
+    bash-completion tzdata terminator 
+
+RUN    apt-get autoclean && \ 
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
 
@@ -75,11 +77,9 @@ RUN wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg \
     -O /etc/apt/keyrings/packages.mozilla.org.asc && \
     echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" \
     | tee -a /etc/apt/sources.list.d/mozilla-apt.list && \
-    echo "Package: *" | tee /etc/apt/preferences.d/mozilla > /dev/null && \
-    echo "Pin: origin packages.mozilla.org" | tee -a /etc/apt/preferences.d/mozilla > /dev/null && \
-    echo "Pin-Priority: 1000" | tee -a /etc/apt/preferences.d/mozilla > /dev/null && \
+    echo 'Package: *Pin: origin packages.mozilla.orgPin-Priority: 900' \
+    | tee /etc/apt/preferences.d/mozilla-apt && \
     apt-get update -q && \
-    apt-get remove -y firefox && \
     apt-get install -y \
     firefox && \
     apt-get autoclean && \
@@ -114,12 +114,30 @@ RUN apt-get update -q && \
     rosdep init && \
     rm -rf /var/lib/apt/lists/*
 
-RUN rosdep update
 
-# Install simulation packages
-RUN apt-get update -q && \
-    apt-get install -y \
-    ros-${ROS_DISTRO}-ros-gz && \
+# Install simulation packages are
+# not ready for amd64/arm64 for now (May 27th, 2024)
+# https://repo.ros2.org/status_page/jazzy_default.html?q=RED
+# RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+#     apt-get update -q && \
+#     apt-get install -y \
+#     ros-${ROS_DISTRO}-gazebo-ros-pkgs \
+#     ros-${ROS_DISTRO}-ros-gz && \
+#     rm -rf /var/lib/apt/lists/*; \
+#     fi
+
+# Install ros2_control_demos
+RUN mkdir -p /home/ubuntu/rosws/src \
+    && git clone https://github.com/ros-controls/ros2_control_demos.git /home/ubuntu/rosws/src/ros2_control_demos && \
+    rosdep fix-permissions && \
+    rosdep update --rosdistro=$ROS_DISTRO && \
+    apt-get update && \
+    echo "rosdep install" && \
+    cd /home/ubuntu/rosws/ && \
+    rosdep install --from-paths ./ -i -y --rosdistro ${ROS_DISTRO} && \
+    echo "rosdep installed" && \
+    apt-get autoclean && \
+    apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
 
 # Enable apt-get completion after running `apt-get update` in the container
